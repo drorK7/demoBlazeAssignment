@@ -1,19 +1,26 @@
 class ProductPage {
-    constructor(page) {
-      this.page = page;
-    }
-  
-    async clickAddToCartButton() {
-        this.page.click('a[href="#"]:has-text("Add to cart")')
-    }
-    async pickItem(itemName){
-        this.page.click(`.hrefch:has-text("${itemName}")`)
-    }
-    async clickNextPage(){
-      this.page.click('button#next2')
-    }
+  constructor(page) {
+    this.page = page;
+    this.addToCartButton = 'a[href="#"]:has-text("Add to cart")';
+    this.nextPageSelector = 'button#next2'
   }
-    module.exports = ProductPage;
 
-  
-  
+  getProductName(productName) {
+    this.productNameSelector = `.hrefch:has-text("${productName}")`;
+    return this.productNameSelector;
+  }
+
+  async clickAddToCartButton() {
+    await this.page.click(this.addToCartButton);
+  }
+
+  async pickItem(itemName) {
+    await this.page.click(this.getProductName(itemName));
+  }
+
+  async clickNextPage() {
+    await this.page.click(this.nextPageSelector, {force:true});
+  }
+}
+
+module.exports = ProductPage;

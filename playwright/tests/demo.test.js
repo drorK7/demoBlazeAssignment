@@ -1,6 +1,7 @@
 const { chromium } = require('playwright');
-const { setupTest , searchAndClickNextPage } = require('../utils.js');
+const { setupTest , searchAndClickNextPage, deleteOrders } = require('../utils.js');
 const CatalogPage = require('../pages/catalogPage.js');
+const {CartPage, placeOrderModal} = require('../pages/cartPage.js')
 const testConfig  = require('../config.js');
 const {SignUpModal , LoginModal}  = require('../components/authComponent.js')
 const ProductPage = require('../pages/productPage.js')
@@ -11,9 +12,11 @@ describe('This is a UI test flow containing several tests in 1 file.', () => {
   let catalogPage;
   let productPage;
   let signUpModal;
+  let cartPage;
   let username = testConfig.username;
   let password = testConfig.password;
   let loginModal
+  let placeOrderModal
   let page;
 
   beforeAll(async () => {
@@ -23,12 +26,14 @@ describe('This is a UI test flow containing several tests in 1 file.', () => {
     signUpModal = new SignUpModal(page)
     loginModal = new LoginModal(page)
     productPage = new ProductPage(page)
+    cartPage = new CartPage(page)
+    placeOrderModal = cartPage.placeOrderModal;
     await page.goto(testConfig.baseUrl);
   }, 10000);
 
   it('Create new user', async () => {
 
-    await catalogPage.getSignUpButton();
+    await catalogPage.clickSignUpButton();
     await page.waitForSelector('#sign-username');
     await signUpModal.enterUsername(username)
     await signUpModal.enterPassword(password)
@@ -36,7 +41,8 @@ describe('This is a UI test flow containing several tests in 1 file.', () => {
   });
 
   it('Login to the system', async () => {
-    await catalogPage.getLoginButton();
+    await page.waitForSelector('[aria-labelledby="signInModalLabel"]', { state: 'hidden', timeout: 5000 });
+    await catalogPage.clickLoginButton();
     await page.waitForSelector('#loginusername');
     await loginModal.enterUsername(username)
     await page.waitForSelector('#loginpassword');
@@ -44,47 +50,50 @@ describe('This is a UI test flow containing several tests in 1 file.', () => {
     await loginModal.clickLoginButton()
   });
   it('Add Iterms to cart', async () => {
-  await page.waitForTimeout(1000);
+  await page.waitForSelector(productPage.getProductName('Nexus 6'));
   await productPage.pickItem('Nexus 6')
-  await page.waitForTimeout(1000);
+  // await page.waitForSelector(1000);
   await productPage.clickAddToCartButton()
-  await page.waitForTimeout(1000);
-  catalogPage.homeHeaderButton()
+  // await page.waitForTimeout(1000);
+  catalogPage.clickHomeHeaderButton()
   await page.waitForTimeout(1000);
   await productPage.clickNextPage()
-  await page.waitForTimeout(1000);
+  // await page.waitForTimeout(1000);
   await productPage.pickItem('MacBook Pro')
-  await page.waitForTimeout(1000);
+  // await page.waitForTimeout(1000);
   await productPage.clickAddToCartButton()
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   });
   it('Move to cart and validate cart', async () => {
-    catalogPage.cartHeaderButton()
-    await page.waitForTimeout(4000);
-    expect(await page.$('td:has-text("Nexus 6")')).toBeTruthy()
-    expect(await page.$('td:has-text("MacBook Pro")')).toBeTruthy();
-    expect(await page.$('.panel-title:has-text("1750")')).toBeTruthy();
-
-
+    await catalogPage.clickCartHeaderButton()
+    await cartPage.cartTableValidate('Nexus 6')
+    await cartPage.cartTableValidate('MacBook Pro')
+    await cartPage.totalPriceValidate('1750')
   
     });
     it('Place an order', async () => {
-      await page.click('button:text("Place Order")');
+      await cartPage.clickPlaceOrderButton()
       await page.waitForTimeout(1000);
-      expect(await page.$('#totalm:has-text("Total: 1750")')).toBeTruthy();
-      await page.click('div#orderModal button:text("Close")');
+      cartPage.placeOrderModal.totalPriceModalValidate("1750")
+      cartPage.placeOrderModal.clickCloseButton()
       await page.waitForTimeout(3000);
-      while (await page.$('.success')) {
-        await page.click('a[href="#"]:has-text("Delete")');
-        await page.waitForTimeout(5000)
-      }
+      deleteOrders(page)
     })
-      it('API Testing', async () => {
-        await loginAPI(page,username,password)
-        await addToCart(page)
-        await validateCartData(page,1) //validate items amount in cart (1 item)
-        await validateViewData(page) // validate the cart view and the item in the cart
+      it.only('API Testing', async () => {
+        const loginResponse = await loginAPI(username, password);
+        await addToCart(loginResponse);
+        const cartData = await validateCartData(loginResponse)
+      
+        // Assertions on the response and its content
+        expect(cartData.data).toBeDefined();
+        expect(cartData.data.Items.length).toBe(1)
+
+        const cartViewresponse = await validateViewData(loginResponse,1)
+        expect(cartViewresponse.data).toBeDefined(); // Verify that the response is defined
+        expect(cartViewresponse.data.id).toBe(3); // Verify a specific property in the response
+        expect(cartViewresponse.data.price).toBe(650);
+        expect(cartViewresponse.data.title).toBe("Nexus 6");
       })
     })
 

@@ -36,5 +36,13 @@ async function searchAndClickNextPage(page, searchText) {
   }
 }
 
+async function deleteOrders(page) {
+  while (await page.$('.success')) {
+    await page.click('a[href="#"]:has-text("Delete")');
+    await page.waitForTimeout(5000);
+  }
+}
 
-module.exports = { setupTest , searchAndClickNextPage };
+
+
+module.exports = { setupTest , searchAndClickNextPage , deleteOrders };

@@ -1,30 +1,39 @@
 class CatalogPage {
-    constructor(page) {
-      this.page = page;
-    }
-  
-    async getSignUpButton() {
-        this.page.click('#signin2')
-    }
-    async getLoginButton(){
-        this.page.click('#login2')
-    }
-    async homeHeaderButton(){
-      this.page.click('a[href]:has-text("Home")')
-    }
-    async cartHeaderButton(){
-      this.page.click('#cartur')
+  constructor(page) {
+    this.page = page;
+    this.signUpButton = '#signin2';
+    this.loginButton = '#login2';
+    this.homeHeaderButtonSelector = 'a[href]:has-text("Home")';
+    this.cartHeaderButtonSelector = '#cartur';
+    this.logoutHeaderButtonSelector = 'a[href]:has-text("Log out")';
+    this.userNameElementSelector = '#nameofuser';
   }
-  async logoutHeaderButton(){
-    this.page.click('a[href]:has-text("Log out")')
+
+  async clickSignUpButton() {
+    await this.page.click(this.signUpButton);
   }
-    async getUserName(){
-        const userNameElement = await page.$('#nameofuser');
-        const userNameText = await page.textContent(userNameElement);
-        return userNameText;
-      }
-    }
-  
-  module.exports = CatalogPage;
-  
-  
+
+  async clickLoginButton() {
+    await this.page.click(this.loginButton);
+  }
+
+  async clickHomeHeaderButton() {
+    await this.page.click(this.homeHeaderButtonSelector);
+  }
+
+  async clickCartHeaderButton() {
+    await this.page.click(this.cartHeaderButtonSelector);
+  }
+
+  async clickLogoutHeaderButton() {
+    await this.page.click(this.logoutHeaderButtonSelector);
+  }
+
+  async getUserName() {
+    const userNameElement = await this.page.$(this.userNameElementSelector);
+    const userNameText = await this.page.textContent(userNameElement);
+    return userNameText;
+  }
+}
+
+module.exports = CatalogPage;

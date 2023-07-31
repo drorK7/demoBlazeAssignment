@@ -16,7 +16,7 @@ async function getCookieValue(page, cookieName) {
   return cookie;
 }
 
-async function validateViewData(page) {
+async function validateViewData() {
   const data = JSON.stringify({
     id: 3
   });
@@ -31,10 +31,11 @@ async function validateViewData(page) {
     const response = await axios.post(requestUrl, data, { headers });
 
     // Assertions on the response and its content
-    expect(response.data).toBeDefined(); // Verify that the response is defined
-    expect(response.data.id).toBe(3); // Verify a specific property in the response
-    expect(response.data.price).toBe(650);
-    expect(response.data.title).toBe("Nexus 6");
+    // expect(response.data).toBeDefined(); // Verify that the response is defined
+    // expect(response.data.id).toBe(3); // Verify a specific property in the response
+    // expect(response.data.price).toBe(650);
+    // expect(response.data.title).toBe("Nexus 6");
+    return response
 
     // Additional assertions as needed
     console.log(JSON.stringify(response.data));
@@ -44,7 +45,7 @@ async function validateViewData(page) {
 }
 
 
-async function validateCartData(page, cartAmount) {
+async function validateCartData(accessToken) {
   const data = JSON.stringify({
     cookie: accessToken,
     flag: true,
@@ -62,8 +63,9 @@ async function validateCartData(page, cartAmount) {
   try {
     const response = await axios(config);
     expect(response).toBeDefined(); // Verify that the response is defined
-    expect(response.data.Items.length).toBe(cartAmount);
-    console.log(JSON.stringify(response.data));
+    return response
+    // expect(response.data.Items.length).toBe(cartAmount);
+    // console.log(JSON.stringify(response.data));
   } catch (error) {
     console.log(error);
   }
@@ -71,7 +73,7 @@ async function validateCartData(page, cartAmount) {
 
 
 
-async function loginAPI(page, username, password) {
+async function loginAPI(username, password) {
   const encodedPass = Buffer.from(password).toString('base64');
 
   const data = JSON.stringify({
@@ -93,13 +95,13 @@ async function loginAPI(page, username, password) {
 
     accessToken = response.data.split(':')[1].trim();
 
-    console.log(JSON.stringify(response.data));
+    return accessToken
   } catch (error) {
     console.log(error);
   }
 }
 
-async function addToCart(page) {
+async function addToCart(accessToken) {
   const data = JSON.stringify({
     id: '10269695-5414-caf2-375c-1e4393d91a3c',
     cookie: accessToken,
