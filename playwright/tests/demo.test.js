@@ -78,9 +78,9 @@ describe('This is a UI test flow containing several tests in 1 file.', () => {
       cartPage.placeOrderModal.totalPriceModalValidate("1750")
       cartPage.placeOrderModal.clickCloseButton()
       await page.waitForTimeout(3000);
-      deleteOrders(page)
+      await deleteOrders(page)
     })
-      it.only('API Testing', async () => {
+      it('API Testing', async () => {
         const loginResponse = await loginAPI(username, password);
         await addToCart(loginResponse);
         const cartData = await validateCartData(loginResponse)
